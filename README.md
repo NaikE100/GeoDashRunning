@@ -28,6 +28,18 @@ A Progressive Web App (PWA) that turns your runs into an adventure as you claim 
 
 ### Deployment
 
+#### GitHub Pages (Recommended for Preview)
+
+1. Go to your repository settings on GitHub
+2. Navigate to **Pages** in the left sidebar
+3. Under **Source**, select **GitHub Actions**
+4. The workflow will automatically deploy on every push to `main`
+5. Your site will be available at: `https://naike100.github.io/GeoDashRunning/`
+
+**Note:** GitHub Pages provides HTTPS automatically, which is required for geolocation to work.
+
+#### Other Hosting Options
+
 Upload the `site/` folder contents to your web server. Ensure:
 - HTTPS is enabled (required for geolocation)
 - Service worker and manifest files are accessible
