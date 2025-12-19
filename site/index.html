@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoDash Runner - Territory Running Game</title>
+    <meta name="theme-color" content="#3B82F6" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3B82F6',
+              secondary: '#10B981'
+            }
+          }
+        }
+      };
+    </script>
+
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <!-- Vanta Waves Background -->
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+
+    <!-- Leaflet Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <style>
+      .map-container {
+        height: 400px;
+      }
+      @media (max-width: 768px) {
+        .map-container {
+          height: 320px;
+        }
+      }
+      .stat-card {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.85);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans">
+    <div id="vanta-bg" class="fixed inset-0 -z-10"></div>
+
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur shadow-sm sticky top-0 z-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <i data-feather="map" class="text-primary h-6 w-6 mr-2"></i>
+            <span class="text-xl font-bold text-gray-900">GeoDash Runner</span>
+          </div>
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="#home" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Home</a>
+            <a
+              href="#how-it-works"
+              class="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+              >How It Works</a
+            >
+            <a
+              href="#leaderboard"
+              class="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+              >Leaderboard</a
+            >
+            <a href="#parkrun" class="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+              >Parkrun</a
+            >
+          </div>
+          <button
+            class="hidden md:inline-flex bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative overflow-hidden">
+      <div class="max-w-7xl mx-auto">
+        <div class="relative z-10 pb-8 bg-white/90 sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+          <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
+            <div class="sm:text-center lg:text-left">
+              <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                <span class="block">Run. Capture.</span>
+                <span class="block text-primary">Conquer Your City!</span>
+              </h1>
+              <p
+                class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0"
+              >
+                Turn your runs into an adventure as you claim virtual territories wherever you are. Compete with friends
+                and your local running community!
+              </p>
+              <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                <div class="rounded-md shadow">
+                  <button
+                    id="primary-start-run"
+                    class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary-600 md:py-4 md:text-lg md:px-10"
+                  >
+                    Start Running
+                  </button>
+                </div>
+                <div class="mt-3 sm:mt-0 sm:ml-3">
+                  <a
+                    href="#how-it-works"
+                    class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 md:py-4 md:text-lg md:px-10"
+                  >
+                    How It Works
+                  </a>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Dashboard -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Distance Card -->
+        <div class="stat-card rounded-lg shadow-lg p-6 transform hover:scale-105 transition duration-300">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-primary-100 text-primary">
+              <i data-feather="map" class="h-6 w-6"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Distance</p>
+              <p id="distance-value" class="text-2xl font-semibold text-gray-900">0 km</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Territories Card -->
+        <div class="stat-card rounded-lg shadow-lg p-6 transform hover:scale-105 transition duration-300">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-secondary-100 text-secondary">
+              <i data-feather="flag" class="h-6 w-6"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Territories</p>
+              <p id="territories-value" class="text-2xl font-semibold text-gray-900">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Points Card -->
+        <div class="stat-card rounded-lg shadow-lg p-6 transform hover:scale-105 transition duration-300">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+              <i data-feather="award" class="h-6 w-6"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Points</p>
+              <p id="points-value" class="text-2xl font-semibold text-gray-900">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Run Status Card -->
+        <div class="stat-card rounded-lg shadow-lg p-6 transform hover:scale-105 transition duration-300">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+              <i data-feather="bar-chart-2" class="h-6 w-6"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Run Status</p>
+              <p id="run-status" class="text-2xl font-semibold text-gray-900">Idle</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="p-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Your Territory Map</h2>
+          <p class="text-gray-600 mb-6">
+            Run to capture territories around you. Each colored zone represents areas you've conquered!
+          </p>
+
+          <div class="map-container rounded-lg overflow-hidden relative">
+            <div id="map" class="w-full h-full"></div>
+            <div class="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none">
+              <button
+                id="map-start-run"
+                class="pointer-events-auto bg-primary hover:bg-primary-600 text-white px-6 py-3 rounded-full text-lg font-medium flex items-center shadow-lg"
+              >
+                <i data-feather="play" class="mr-2"></i>
+                <span id="start-run-label">Start Run</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-4">
+            <div class="flex items-center">
+              <div class="w-4 h-4 rounded-full bg-primary mr-2"></div>
+              <span class="text-sm text-gray-600">Your Territories</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 rounded-full bg-secondary mr-2"></div>
+              <span class="text-sm text-gray-600">Available Territories</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+              <span class="text-sm text-gray-600">Competitor Territories</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="bg-gray-100 py-14">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2 class="text-base text-primary font-semibold tracking-wide uppercase">How It Works</h2>
+          <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            Capture real-world territory as you run
+          </p>
+          <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            We turn your GPS track into territories on the map. The more you move, the more you own.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Parkrun Integration -->
+    <section id="parkrun" class="bg-gray-100 pt-2 pb-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2 class="text-base text-primary font-semibold tracking-wide uppercase">Parkrun Partnership</h2>
+          <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            Join your local Parkrun community
+          </p>
+          <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            Special bonuses for participating in Saturday parkrun events!
+          </p>
+        </div>
+
+        <div class="mt-10">
+          <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 bg-primary-100 rounded-md p-3">
+                    <i data-feather="calendar" class="h-6 w-6 text-primary"></i>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <h3 class="text-lg font-medium text-gray-900">Double Points</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                      Earn 2x territory points during parkrun events
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 bg-secondary-100 rounded-md p-3">
+                    <i data-feather="users" class="h-6 w-6 text-secondary"></i>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <h3 class="text-lg font-medium text-gray-900">Team Challenges</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                      Compete with other parkrunners in weekly challenges
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+              <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+                    <i data-feather="award" class="h-6 w-6 text-yellow-600"></i>
+                  </div>
+                  <div class="ml-5 w-0 flex-1">
+                    <h3 class="text-lg font-medium text-gray-900">Exclusive Badges</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                      Unlock special achievements for parkrun participation
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-primary">
+      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 lg:py-20">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
+          <div>
+            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+              Ready to start your territory conquest?
+            </h2>
+            <p class="mt-3 max-w-3xl text-lg leading-6 text-primary-100">
+              Install the GeoDash PWA on your phone and turn every run, anywhere in the world, into a territory conquest.
+            </p>
+            <div class="mt-8 sm:flex">
+              <div class="rounded-md shadow">
+                <button
+                  id="install-pwa"
+                  class="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-primary bg-white hover:bg-gray-50"
+                >
+                  <i data-feather="download" class="mr-2"></i> Install App
+                </button>
+              </div>
+              <div class="mt-3 sm:mt-0 sm:ml-3">
+                <a
+                  href="#how-it-works"
+                  class="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-500 hover:bg-primary-400"
+                >
+                  <i data-feather="play" class="mr-2"></i> How It Works
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 lg:mt-0">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+              <div class="px-6 py-8 sm:p-10 sm:pb-6">
+                <div>
+                  <h3
+                    class="inline-flex px-4 py-1 rounded-full text-sm font-semibold tracking-wide uppercase bg-primary-100 text-primary"
+                  >
+                    Beta Launch
+                  </h3>
+                </div>
+                <div class="mt-4 flex items-baseline text-5xl md:text-6xl font-extrabold">
+                  Free
+                  <span class="ml-1 text-2xl font-medium text-gray-500">
+                    during beta
+                  </span>
+                </div>
+                <p class="mt-5 text-lg text-gray-500">
+                  All features unlocked with no subscription required during our global beta testing phase.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900">
+      <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+              GeoDash Runner
+            </h3>
+            <ul class="mt-4 space-y-2">
+              <li>
+                <a href="#home" class="text-base text-gray-300 hover:text-white">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Blog
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+              Support
+            </h3>
+            <ul class="mt-4 space-y-2">
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Safety
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Community
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+              Legal
+            </h3>
+            <ul class="mt-4 space-y-2">
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Privacy
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Terms
+                </a>
+              </li>
+              <li>
+                <a href="#" class="text-base text-gray-300 hover:text-white">
+                  Cookie Policy
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase">
+              Connect
+            </h3>
+            <div class="mt-4 flex space-x-6">
+              <a href="#" class="text-gray-400 hover:text-white">
+                <i data-feather="facebook" class="h-6 w-6"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-white">
+                <i data-feather="instagram" class="h-6 w-6"></i>
+              </a>
+              <a href="#" class="text-gray-400 hover:text-white">
+                <i data-feather="twitter" class="h-6 w-6"></i>
+              </a>
+            </div>
+            <div class="mt-6">
+              <p class="text-gray-400 text-sm">
+                © 2025 GeoDash Runner. All rights reserved.
+              </p>
+              <p class="mt-2 text-gray-400 text-sm">
+                Made with ❤️ for runners everywhere
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+  </html>
+
+
+

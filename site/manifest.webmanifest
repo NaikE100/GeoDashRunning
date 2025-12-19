@@ -1,0 +1,20 @@
+{
+  "name": "GeoDash Runner",
+  "short_name": "GeoDash",
+  "description": "Run, capture, and conquer territories wherever you are in the world.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/static/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
+
+
+
